@@ -133,3 +133,85 @@ Databases.Isolation
 **source:** https://www.postgresql.org/docs/current/transaction-iso.html
 
 ---
+
+Databases.Isolation
+
+## Dirty Read
+
+**id:** db-dirty-read
+
+**question:** What is a dirty read?
+
+**answer:** Transaction A reads a value written by transaction B before B commits. If B rolls back, A relied on a value that never became committed state.
+
+**example:** B temporarily changes balance 100 to 20; A reads 20; B rolls back to 100.
+
+**caveat:** SQL Read Uncommitted may allow this, but PostgreSQL maps Read Uncommitted to Read Committed and never performs dirty reads.
+
+**related:** db-read-committed, db-isolation-levels
+
+**source:** https://www.postgresql.org/docs/current/transaction-iso.html
+
+---
+
+Databases.Isolation
+
+## Nonrepeatable Read
+
+**id:** db-nonrepeatable-read
+
+**question:** What is a nonrepeatable read, and does it automatically trigger retry?
+
+**answer:** Within one transaction, reading the same row twice returns different values because another transaction committed an update between the reads. At Read Committed, this is allowed and ordinarily triggers neither an error nor an automatic retry.
+
+**example:** A reads balance=100. B updates balance=200 and commits. A reads again and sees 200, then may commit normally.
+
+**caveat:** Repeatable Read/Snapshot Isolation usually prevents the changed observation by retaining a snapshot. Serializable implementations can abort transactions for unsafe dependency patterns, not simply because a read was repeated.
+
+**related:** db-dirty-read, db-phantom-read, db-read-committed, db-serializability
+
+**source:** https://www.postgresql.org/docs/current/transaction-iso.html
+
+---
+
+Databases.Isolation
+
+## Phantom Read
+
+**id:** db-phantom-read
+
+**question:** How is a phantom read different from a nonrepeatable read?
+
+**answer:** The same predicate query inside one transaction returns a different set of matching rows because another transaction inserted, deleted or changed qualifying rows and committed. A nonrepeatable read instead concerns changed values of a row read again.
+
+**example:** A runs SELECT COUNT(*) FROM orders WHERE status='pending' and sees 5; B inserts a pending order and commits; A reruns the query and sees 6.
+
+**caveat:** Under the SQL standard, Repeatable Read need not prevent phantoms. PostgreSQL's Repeatable Read uses snapshot isolation and *does* prevent them, but still permits serialization anomalies.
+
+**related:** db-nonrepeatable-read, db-snapshot-isolation, db-isolation-levels
+
+**source:** https://www.postgresql.org/docs/current/transaction-iso.html
+
+---
+
+Databases.Isolation
+
+## Serialization Anomaly
+
+**id:** db-serialization-anomaly
+
+**question:** What is a serialization anomaly, and what happens under Serializable isolation?
+
+**answer:** Concurrent transactions commit a result that cannot be explained by *any* ordering where those transactions ran one at a time. A Serializable database must avoid this, often by rolling back a transaction and returning a retryable serialization failure.
+
+**example:** Two on-call doctors each see the other present and independently go off call. Under snapshot isolation both may commit, violating the rule that at least one remain; either possible serial ordering would stop the second change.
+
+**mechanism:** PostgreSQL's Serializable Snapshot Isolation (SSI) tracks hazardous read/write dependencies and can abort a transaction instead of forcing all transactions to execute one by one.
+
+**caveat:** A serialization anomaly is not synonymous with a nonrepeatable read. Read Committed may allow a nonrepeatable read without raising any error. PostgreSQL's serialization failure SQLSTATE is 40001; retry the entire transaction, not only the last query.
+
+**related:** db-write-skew, db-serializability, db-snapshot-isolation
+
+**source:** https://www.postgresql.org/docs/current/transaction-iso.html
+
+---
