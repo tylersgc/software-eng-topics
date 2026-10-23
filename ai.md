@@ -81,17 +81,19 @@ AI.LLMInference
 
 **question:** What is the transformer KV cache and why is it useful during autoregressive generation?
 
-**answer:** It stores attention keys (K) and values (V) for previous tokens in each transformer layer, so generating the next token does not repeatedly recompute those prior tokens' K/V projections.
+**answer:** It stores attention key (K) and value (V) *vectors* for prior tokens, per transformer attention layer (and KV head), so generating later tokens can reuse earlier attention states rather than recompute them. A key is not a word or dictionary lookup key.
 
 **mechanism:**
-- At each layer, attention derives Q (query), K (key), V (value) representations.
-- The new token's Q attends to cached K/V for earlier tokens plus its own K/V.
+- Each token (not necessarily a whole word) produces Q (query), K (key), V (value) vectors per relevant attention head.
+- Attention compares the current token's Q with earlier K vectors to get weights; it combines V vectors using those weights.
+- The current token's Q attends to cached K/V for earlier tokens plus its own K/V.
+- Previous Q vectors need not be cached for ordinary causal self-attention.
 - Append the new token's K/V to the cache for future decode steps.
 - Prefill processes the input prompt and populates the cache; decode then generates tokens incrementally.
 
 **tradeoffs:** Speeds up autoregressive decoding but uses GPU/accelerator memory that grows with context length and concurrent sequences. Techniques such as grouped-query attention, quantized KV caches and paged attention reduce memory pressure.
 
-**caveat:** The cache is *intermediate attention state*, not a database of facts or a cache of generated text. Its name comes from attention's key/value tensors. Exact video-specific claims were not verified.
+**caveat:** Keys are numeric vectors used for similarity scoring, not word strings or hash-map keys. The cache is *intermediate attention state*, not a database of facts or a cache of generated text. Exact video-specific claims were not verified.
 
 **example:** With a 1,000-token prompt, token 1,001 can attend to cached prompt K/V rather than reprocessing all prior tokens just to rebuild their projections.
 
