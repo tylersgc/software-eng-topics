@@ -142,6 +142,26 @@ Find the contiguous subarray with the largest product.
 
 ---
 
+## Strings / Palindromes
+
+### [647. Palindromic Substrings](https://leetcode.com/problems/palindromic-substrings/)
+
+Count all contiguous substrings that are palindromes.
+
+**Pattern:** Two Pointers / Expand Around Center / DP
+
+**Hint / Intuition:** Every palindrome has a center. Expand from each character (odd length) and each gap (even length), counting while both sides match.
+
+**Alternative (DP):** A substring is a palindrome if its ends match and its interior is a palindrome (or its length is at most 2).
+
+`dp[l][r] = s[l] == s[r] and (r-l < 2 or dp[l+1][r-1])`
+
+**Remember:** There are `2n - 1` centers. Build palindromes outward instead of checking each substring from scratch.
+
+**Complexity:** Center expansion: O(n²) time, O(1) extra space. DP: O(n²) time, O(n²) space.
+
+---
+
 # Problem-Solving Concepts
 
 ### [C1. DP or Greedy?](https://en.wikipedia.org/wiki/Greedy_algorithm)
