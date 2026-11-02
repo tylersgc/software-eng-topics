@@ -307,3 +307,136 @@ Databases.StorageInternals
 - https://github.com/ClickHouse/clickhouse-docs/blob/main/docs/managing-data/core-concepts/merges.mdx
 
 ---
+
+Databases.StorageInternals
+
+## SQL Databases Using LSM Trees
+
+**id:** db-sql-lsm
+
+**question:** Are LSM-trees just a NoSQL storage structure, or do SQL databases use them too?
+
+**answer:** SQL is a relational query/interface model, while LSM is a storage organization. SQL databases can implement their tables and indexes over an LSM-based key/value engine. Examples: MySQL/MariaDB with MyRocks (RocksDB), CockroachDB (Pebble), and TiDB using TiKV/RocksDB.
+
+**mechanism:** SQL plans/transactions are translated to underlying storage operations. The embedded engine organizes ordered keys using memtables, SSTables and background compaction.
+
+**caveat:** SQL support does not imply a B-Tree, and an LSM-backed engine is not automatically NoSQL. Storage engines may differ by configuration or version.
+
+**related:** db-btree-vs-lsm, db-lsm-read-path
+
+**source:**
+- https://mariadb.com/docs/server/server-usage/storage-engines/myrocks/about-myrocks-for-mariadb
+- https://www.cockroachlabs.com/blog/continuum-architecture/
+- https://docs.pingcap.com/tidb/stable/rocksdb-overview/
+
+---
+
+Databases.StorageInternals
+
+## LSM Point-Read Path
+
+**id:** db-lsm-read-path
+
+**question:** How does an LSM tree find the newest value when a key may exist in multiple SSTables?
+
+**answer:** Check active/immutable memtables and candidate SSTables by recency and key range, using indexes and optional Bloom filters to skip irrelevant files; resolve the newest version visible to the read's snapshot. Newer tombstones hide older values.
+
+**mechanism:**
+- Mutable memtable and any immutable memtables hold recent updates.
+- L0 SSTables can have overlapping ranges, requiring consideration of multiple files.
+- With leveled compaction, L1+ files typically have non-overlapping ranges within each level, limiting candidates.
+- SST indexes locate potential data blocks; Bloom filters can quickly rule out files lacking the key.
+- Merge/compaction consolidates versions and removes obsolete entries when safe for snapshots.
+
+**tradeoffs:** Buffered writes improve throughput but reads may probe several locations; compaction spends CPU, I/O and temporary space to reduce read and space amplification.
+
+**caveat:** Exact search order and visibility depend on engine implementation, snapshots and compaction style. Bloom filters are optional and mainly help point lookups.
+
+**related:** db-bloom-filter, db-lsm-compaction, db-btree-vs-lsm
+
+**source:**
+- https://github.com/facebook/rocksdb/wiki/Indexing-SST-Files-for-Better-Lookup-Performance
+- https://github.com/facebook/rocksdb/wiki/RocksDB-Overview
+
+---
+
+Databases.StorageInternals
+
+## Bloom Filters in LSM Trees vs B-Trees
+
+**id:** db-bloom-filter
+
+**question:** What does a Bloom filter guarantee, and why is it more useful for an LSM than a B+Tree?
+
+**answer:** A Bloom filter is a compact probabilistic membership test: 'definitely absent' or 'possibly present.' Properly built filters avoid false negatives but can have false positives. LSM engines use them to skip SSTables that do not contain a searched key. A B+Tree already routes a key to a single leaf position, so Bloom filters usually save less work.
+
+**mechanism:**
+- Hash each inserted key into a bitset.
+- An unset required bit proves absence; all set bits only indicate possible presence.
+- On a possible hit, read the actual index/data to verify.
+- RocksDB can maintain per-SST filters; filters are optional and tuned to point-lookup workloads.
+
+**tradeoffs:** Extra storage/memory and hash CPU to reduce unnecessary disk reads; generally less useful for broad range scans.
+
+**caveat:** A B-Tree-based database can use Bloom filters in other index paths. PostgreSQL's bloom extension is a separate index access method, not automatically part of its B-Tree indexes.
+
+**related:** db-lsm-read-path, db-btree-vs-bplus
+
+**source:**
+- https://github.com/facebook/rocksdb/wiki/RocksDB-Bloom-Filter
+- https://www.postgresql.org/docs/current/bloom.html
+
+---
+
+Databases.StorageInternals
+
+## B-Tree vs B+Tree
+
+**id:** db-btree-vs-bplus
+
+**question:** How does a B+Tree differ from a classical B-Tree, and why is it common in databases?
+
+**answer:** A classical B-Tree can store records in internal and leaf nodes. A B+Tree stores actual records or record references only in leaves; internal nodes contain routing/separator keys and child pointers. B+Trees typically link leaves for efficient ordered scans and can achieve high internal fanout.
+
+**mechanism:**
+- Internal B+Tree nodes narrow the search to a child page.
+- Lookup reaches a leaf even when separator keys appear in internal nodes.
+- Scan a range by finding its first leaf, then following leaf links in sorted order.
+- InnoDB's clustered index stores row data in leaf pages; SQL Server documents its rowstore indexes as B+Trees.
+
+**tradeoffs:** B+Trees favor range scans and compact internal routing; classical B-Trees may satisfy some lookups within internal nodes.
+
+**caveat:** Real database documentation often calls B+Tree-family designs 'B-trees.' PostgreSQL has a heap table plus separate B-Tree-family indexes; InnoDB stores clustered table rows in its index leaves.
+
+**related:** db-btree-vs-lsm, db-storage-axes
+
+**source:**
+- https://opendsa-server.cs.vt.edu/ODSA/Books/vt/cs5040/spring-2023/TR_500_PM/html/BTree.html
+- https://learn.microsoft.com/en-us/sql/relational-databases/sql-server-index-design-guide
+- https://dev.mysql.com/doc/refman/8.0/en/innodb-compression-internals.html
+
+---
+
+Databases.StorageInternals
+
+## LSM Compaction and Tombstones
+
+**id:** db-lsm-compaction
+
+**question:** What does compaction achieve, and why can't an LSM immediately erase older versions or deletions?
+
+**answer:** Compaction merge-sorts immutable SSTables, reorganizes key ranges, and removes obsolete overwritten entries or tombstones when safe. Earlier versions may need to remain for active snapshots; tombstones must remain long enough to hide older values stored elsewhere.
+
+**mechanism:**
+- Flush buffered updates into sorted immutable SSTables.
+- Compact overlapping files and retain the newest versions required by readers/snapshots.
+- Remove overwritten values and deletion markers only when no older visible data can reappear and retention requirements allow.
+- More compaction can improve reads but increases background write amplification.
+
+**related:** db-lsm-read-path, db-btree-vs-lsm
+
+**source:**
+- https://github.com/facebook/rocksdb/wiki/RocksDB-Overview
+- https://www.cockroachlabs.com/blog/value-separation-pebble-optimization/
+
+---
