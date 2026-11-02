@@ -232,8 +232,9 @@ Databases.StorageInternals
 
 **related:** db-btree-vs-lsm, db-row-vs-column
 
-**source:** https://dev.mysql.com/doc/refman/8.4/en/innodb-index-types.html
-**source_2:** https://clickhouse.com/docs/en/merges
+**source:**
+- https://dev.mysql.com/doc/refman/8.4/en/innodb-index-types.html
+- https://github.com/ClickHouse/clickhouse-docs/blob/main/docs/managing-data/core-concepts/merges.mdx
 
 ---
 
@@ -257,8 +258,9 @@ Databases.StorageInternals
 
 **related:** db-storage-axes, db-row-vs-column
 
-**source:** https://github.com/facebook/rocksdb/wiki/RocksDB-Overview
-**source_2:** https://www.postgresql.org/docs/current/btree.html
+**source:**
+- https://github.com/facebook/rocksdb/wiki/RocksDB-Overview
+- https://www.postgresql.org/docs/current/btree.html
 
 ---
 
@@ -278,8 +280,9 @@ Databases.StorageInternals
 
 **related:** db-storage-axes, db-btree-vs-lsm, db-wide-column-vs-columnar
 
-**source:** https://parquet.apache.org/docs/concepts/
-**source_2:** https://clickhouse.com/resources/engineering/what-is-columnar-storage
+**source:**
+- https://parquet.apache.org/docs/concepts/
+- https://clickhouse.com/resources/engineering/what-is-columnar-storage
 
 ---
 
@@ -299,7 +302,8 @@ Databases.StorageInternals
 
 **related:** db-btree-vs-lsm, db-row-vs-column
 
-**source:** https://cassandra.apache.org/doc/stable/cassandra/architecture/storage-engine.html
-**source_2:** https://clickhouse.com/docs/en/merges
+**source:**
+- https://cassandra.apache.org/doc/stable/cassandra/architecture/storage-engine.html
+- https://github.com/ClickHouse/clickhouse-docs/blob/main/docs/managing-data/core-concepts/merges.mdx
 
 ---
