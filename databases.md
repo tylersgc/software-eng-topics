@@ -215,3 +215,91 @@ Databases.Isolation
 **source:** https://www.postgresql.org/docs/current/transaction-iso.html
 
 ---
+
+Databases.StorageInternals
+
+## Storage-Engine Organization vs Physical Layout
+
+**id:** db-storage-axes
+
+**question:** Are B-Trees/LSM-Trees at a different layer from row/column stores?
+
+**answer:** Both concern physical storage design, but on different axes. B-Trees/LSM-Trees organize reads, writes and key access; row/column formats determine which field values are physically grouped together. They can coexist within a storage engine rather than forming a strict two-layer stack.
+
+**example:** MySQL InnoDB: B+Tree clustered index whose leaves store row records. ClickHouse MergeTree: sorted immutable parts with columnar files and background merging. PostgreSQL: heap-organized row table plus separate B-Tree indexes.
+
+**caveat:** B-Tree can be an index over a heap rather than the primary data store. An LSM tree typically organizes key/value records; a database may also have several indexing and encoding structures.
+
+**related:** db-btree-vs-lsm, db-row-vs-column
+
+**source:** https://dev.mysql.com/doc/refman/8.4/en/innodb-index-types.html
+**source_2:** https://clickhouse.com/docs/en/merges
+
+---
+
+Databases.StorageInternals
+
+## B-Tree vs LSM-Tree
+
+**id:** db-btree-vs-lsm
+
+**question:** How do B-Tree and LSM-Tree storage organizations differ, especially on writes?
+
+**answer:** A B(+)-Tree updates relevant pages of a balanced disk-page tree; an LSM-Tree accumulates sorted in-memory updates, flushes immutable sorted SSTables, then compacts files in the background.
+
+**mechanism:**
+- B(+)-Tree: traverse internal pages to leaf pages; update data/index pages; page splits possible.
+- LSM: append WAL for crash recovery, update memtable, flush sorted SSTables, perform compaction.
+- Both may use a WAL; LSM's write advantage comes from batching and avoiding immediate random updates to the main on-disk structure, not from skipping durability.
+- B-Tree tends toward predictable point/range reads; LSM can improve write throughput while incurring compaction and read/write amplification.
+
+**tradeoffs:** Actual performance depends on write/read mix, storage hardware, memory, compaction configuration and indexing.
+
+**related:** db-storage-axes, db-row-vs-column
+
+**source:** https://github.com/facebook/rocksdb/wiki/RocksDB-Overview
+**source_2:** https://www.postgresql.org/docs/current/btree.html
+
+---
+
+Databases.StorageInternals
+
+## Row-Oriented vs Column-Oriented Storage
+
+**id:** db-row-vs-column
+
+**question:** What does row vs column storage change about physical data layout?
+
+**answer:** A row store places fields from a record together; a column store groups values from the same field together, usually in row groups and column chunks. Row layout favors fetching or changing full records; column layout favors scanning selected fields, compression and aggregations.
+
+**example:** SELECT * WHERE id=2 naturally suits row-oriented OLTP; SELECT AVG(age) over millions of rows often suits columnar OLAP. Parquet uses row groups containing separate column chunks.
+
+**caveat:** These are workload tendencies, not exclusivity. Both can use indexes; many engines use hybrids. Columnar storage is a file/data layout, not synonymous with LSM or a B-Tree.
+
+**related:** db-storage-axes, db-btree-vs-lsm, db-wide-column-vs-columnar
+
+**source:** https://parquet.apache.org/docs/concepts/
+**source_2:** https://clickhouse.com/resources/engineering/what-is-columnar-storage
+
+---
+
+Databases.StorageInternals
+
+## Wide-Column vs Columnar Analytics
+
+**id:** db-wide-column-vs-columnar
+
+**question:** Is Apache Cassandra's “wide-column store” the same as an analytical column store?
+
+**answer:** No. Wide-column describes Cassandra's distributed, partition-key-oriented data model. It uses an LSM-based storage engine with memtables and immutable SSTables. Analytical column stores physically group field values by column to accelerate scans and aggregates.
+
+**example:** Cassandra: write-heavy, partition-key/cluster-key lookup workloads. ClickHouse: columnar compressed data parts, sparse sorting-key index and background part merges for analytics.
+
+**caveat:** ClickHouse's MergeTree is a merge-based columnar engine, not simply the same layout or code as a classic RocksDB LSM tree.
+
+**related:** db-btree-vs-lsm, db-row-vs-column
+
+**source:** https://cassandra.apache.org/doc/stable/cassandra/architecture/storage-engine.html
+**source_2:** https://clickhouse.com/docs/en/merges
+
+---
