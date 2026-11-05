@@ -47,6 +47,20 @@ Find the lowest node that is an ancestor of both `p` and `q`.
 
 ---
 
+### [105. Construct Binary Tree from Preorder and Inorder Traversal](https://leetcode.com/problems/construct-binary-tree-from-preorder-and-inorder-traversal/)
+
+Reconstruct a binary tree from its preorder and inorder traversals (unique values).
+
+**Pattern:** Trees / Divide & Conquer / Recursive DFS
+
+**Hint / Intuition:** Preorder picks the root; inorder splits its left and right subtrees. Left subtree size tells you how to divide preorder. Repeat recursively.
+
+**Remember:** Preorder = Root → Left → Right; Inorder = Left → Root → Right. Use a value-to-inorder-index map and preorder pointer for O(n) reconstruction.
+
+**Complexity:** O(n) time, O(n) extra space (index map + recursion).
+
+---
+
 ## Linked Lists
 
 ### [143. Reorder List](https://leetcode.com/problems/reorder-list/)
