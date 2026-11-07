@@ -156,6 +156,22 @@ Find the contiguous subarray with the largest product.
 
 ---
 
+## Strings / DP
+
+### [139. Word Break](https://leetcode.com/problems/word-break/)
+
+Determine whether a string can be segmented into dictionary words (words may be reused).
+
+**Pattern:** Recursive Search / Memoization / DP
+
+**Hint / Intuition:** At each index, try every matching word and recurse from the end of that word. Different splits can reach the same remaining suffix.
+
+**Remember:** Valid-prefix pruning reduces work, but repeated suffixes still cause exponential recursion. Cache results by starting index.
+
+**Complexity:** Naive search: O(2^n) recursive paths in the worst case, plus word-matching cost. Memoization avoids revisiting the same index.
+
+---
+
 ## Strings / Palindromes
 
 ### [647. Palindromic Substrings](https://leetcode.com/problems/palindromic-substrings/)
@@ -201,6 +217,20 @@ Greedy usually means:
 **Remember:** Brute force → memoization / DP → ask if the DP state can collapse into one value, and whether discarding the other choices is always safe.
 
 **Example:** Jump Game DP stores which indices can reach the end. Greedy realizes only the reachable boundary matters.
+
+---
+
+### [C2. Recognizing Exponential Recursion](https://en.wikipedia.org/wiki/Recurrence_relation)
+
+Estimate the time complexity of a naive recursive search by inspecting its recursion tree.
+
+**Pattern:** Recursion Tree / Time Complexity
+
+**Hint / Intuition:** Ask: (1) branches per call? (2) recursion depth? (3) repeated states? Branching into multiple nearly-full-size subproblems often means exponential work.
+
+**Remember:** `b` branches × depth `d` suggests an O(b^d) upper bound, not always a tight bound. Two calls on half-size inputs can be O(n); two calls on size n−1 can be O(2^n). Memoization collapses repeated states.
+
+**Related:** [70. Climbing Stairs](https://leetcode.com/problems/climbing-stairs/), [198. House Robber](https://leetcode.com/problems/house-robber/), [494. Target Sum](https://leetcode.com/problems/target-sum/), [416. Partition Equal Subset Sum](https://leetcode.com/problems/partition-equal-subset-sum/), [131. Palindrome Partitioning](https://leetcode.com/problems/palindrome-partitioning/)
 
 ---
 
