@@ -108,7 +108,7 @@ Merge `k` sorted linked lists into one sorted linked list.
 
 ---
 
-## Greedy / Intervals
+## Greedy
 
 ### [435. Non-overlapping Intervals](https://leetcode.com/problems/non-overlapping-intervals/)
 
@@ -121,8 +121,6 @@ Remove the fewest intervals so the rest do not overlap.
 **Complexity:** O(n log n) time, O(1) extra space (excluding sort).
 
 ---
-
-## Greedy
 
 ### [55. Jump Game](https://leetcode.com/problems/jump-game/)
 
@@ -138,7 +136,7 @@ Determine whether you can reach the last index.
 
 ---
 
-## Arrays / Dynamic Programming
+## Arrays / DP
 
 ### [152. Maximum Product Subarray](https://leetcode.com/problems/maximum-product-subarray/)
 
@@ -151,6 +149,8 @@ Find the contiguous subarray with the largest product.
 `cur_max = max(n, prev_max * n, prev_min * n)`
 
 `cur_min = min(n, prev_max * n, prev_min * n)`
+
+**Remember:** Calculate both from the previous max/min before overwriting either.
 
 **Complexity:** O(n) time, O(1) space.
 
@@ -168,7 +168,7 @@ Determine whether a string can be segmented into dictionary words (words may be 
 
 **Remember:** Valid-prefix pruning reduces work, but repeated suffixes still cause exponential recursion. Cache results by starting index.
 
-**Complexity:** Naive search: O(2^n) recursive paths in the worst case, plus word-matching cost. Memoization avoids revisiting the same index.
+**Complexity:** Naive: exponential (up to O(2^n) paths, plus matching cost). Memoized, scanning `W` words of max length `L` at each of `n` positions: O(n · W · L) time, O(n) cache/stack space. Checking all split positions gives O(n²) candidates, but Python string slicing/comparison can make that O(n³).
 
 ---
 
@@ -228,7 +228,7 @@ Estimate the time complexity of a naive recursive search by inspecting its recur
 
 **Hint / Intuition:** Ask: (1) branches per call? (2) recursion depth? (3) repeated states? Branching into multiple nearly-full-size subproblems often means exponential work.
 
-**Remember:** `b` branches × depth `d` suggests an O(b^d) upper bound, not always a tight bound. Two calls on half-size inputs can be O(n); two calls on size n−1 can be O(2^n). Memoization collapses repeated states.
+**Remember:** `b` branches per call, depth `d` → O(b^d) upper bound, not always tight. Two calls on half-size inputs can be O(n); two calls on size n−1 can be O(2^n). Memoization collapses repeated states.
 
 **Related:** [70. Climbing Stairs](https://leetcode.com/problems/climbing-stairs/), [198. House Robber](https://leetcode.com/problems/house-robber/), [494. Target Sum](https://leetcode.com/problems/target-sum/), [416. Partition Equal Subset Sum](https://leetcode.com/problems/partition-equal-subset-sum/), [131. Palindrome Partitioning](https://leetcode.com/problems/palindrome-partitioning/)
 
@@ -324,13 +324,13 @@ Choose elements where the order of the chosen elements does not matter.
 
 **Hint / Intuition:** `{1, 2}` and `{2, 1}` represent the same choice.
 
-**Remember:** Combination = choose. Permutation = arrange.
+**Remember:** Combination = choose. Permutation = arrange. For `n` distinct elements, choose `k` without replacement: `C(n, k) = n! / (k!(n-k)!)`.
 
 **Related:** [39. Combination Sum](https://leetcode.com/problems/combination-sum/), [40. Combination Sum II](https://leetcode.com/problems/combination-sum-ii/)
 
 ---
 
-### [A6. Prefix / Suffix](https://leetcode.com/problems/product-of-array-except-self/)
+### [A6. Prefix / Suffix](https://www.geeksforgeeks.org/dsa/precomputation-technique-on-arrays/)
 
 A prefix starts at the beginning; a suffix ends at the end.
 
