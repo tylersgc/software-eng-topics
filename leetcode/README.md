@@ -33,6 +33,24 @@ Find the missing number from `0...n` given `n` distinct numbers.
 
 ---
 
+## Tries / Backtracking
+
+### [212. Word Search II](https://leetcode.com/problems/word-search-ii/)
+
+Find dictionary words by walking adjacent board cells without reusing a cell in the same path.
+
+**Pattern:** Trie + DFS / Backtracking / Prefix Pruning
+
+**Hint / Intuition:** Start DFS from each cell. Stop when the current path is not a dictionary prefix; a Trie shares prefixes across words.
+
+**Remember:** Mark visited cells while exploring, then unmark on backtrack. Mark words found to avoid duplicates; delete dead Trie branches to prune future searches.
+
+**Memoization:** `(row, col, trie_node)` is insufficient: the future also depends on visited cells. Full-state caching is often expensive and has few hits; deleting words mutates the Trie.
+
+**Complexity:** Build Trie: O(S). DFS worst-case upper bound: O(M · N · 3^L), even with prefix pruning. Space: O(S + L) excluding results. `S` = total dictionary characters, `M × N` = board size, `L` = max word length (capped by M · N).
+
+---
+
 ## Trees / DFS
 
 ### [236. Lowest Common Ancestor of a Binary Tree](https://leetcode.com/problems/lowest-common-ancestor-of-a-binary-tree/)
