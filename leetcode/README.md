@@ -4,32 +4,33 @@
 
 ### [338. Counting Bits](https://leetcode.com/problems/counting-bits/)
 
-Count the `1` bits for every number from `0` to `n`.
+**Problem:** Count the 1-bits of every integer from 0 through n.
 
-**Pattern:** Bit Manipulation + DP
+**Naive solution:** For each integer, repeatedly shift and count its 1-bits — O(n log n) time, O(n) output space.
 
-**Hint / Intuition:** Remove the last bit, reuse its count, then add the last bit.
+**Hint / Intuition:** Every number is a smaller number plus one bit.
 
-`dp[i] = dp[i >> 1] + (i & 1)`
+**Solution 1:** Remove the highest 1-bit: `dp[i] = dp[i ^ (1 << (i.bit_length()-1))] + 1` — O(n) time, O(n) space.
 
-**Complexity:** O(n) time, O(n) space.
+**Solution 2:** Remove the lowest bit: `dp[i] = dp[i >> 1] + (i & 1)` — O(n) time, O(n) space.
+
+**Pattern / Remember:** Bit Manipulation / DP. Reuse a previously computed smaller number; initialize `dp[0] = 0`.
 
 ---
 
 ### [268. Missing Number](https://leetcode.com/problems/missing-number/)
 
-Find the missing number from `0...n` given `n` distinct numbers.
+**Problem:** Find the missing integer from 0 through n.
 
-**Pattern:** Math / Bit Manipulation (XOR)
+**Naive solution:** Check each candidate by scanning the array — O(n²) time, O(1) extra space.
 
-**Hint / Intuition:**
+**Hint / Intuition:** The expected numbers are known, so cancel what is present.
 
-- **Math:** Expected sum minus actual sum. `n * (n + 1) // 2 - sum(nums)`
-- **XOR:** Identical numbers cancel (`a ^ a = 0`). XOR all numbers from `0...n` with `nums`; only the missing number remains.
+**Solution 1:** Sum difference: `n*(n+1)//2 - sum(nums)` — O(n) time, O(1) space.
 
-**Remember:** Expected sum → subtraction. Matching pairs → XOR cancellation.
+**Solution 2:** XOR all indices, values, and n; matching numbers cancel — O(n) time, O(1) space.
 
-**Complexity:** Both O(n) time, O(1) extra space.
+**Pattern / Remember:** Math / XOR. Expected sum → subtract; pairs → `a ^ a = 0`.
 
 ---
 
@@ -37,17 +38,17 @@ Find the missing number from `0...n` given `n` distinct numbers.
 
 ### [212. Word Search II](https://leetcode.com/problems/word-search-ii/)
 
-Find dictionary words by walking adjacent board cells without reusing a cell in the same path.
+**Problem:** Find dictionary words along adjacent board cells, without reusing a cell in a path.
 
-**Pattern:** Trie + DFS / Backtracking / Prefix Pruning
+**Naive solution:** Search every word separately by enumerating board paths — up to O(W·M·N·L·3^L) time, O(L) DFS space.
 
-**Hint / Intuition:** Start DFS from each cell. Stop when the current path is not a dictionary prefix; a Trie shares prefixes across words.
+**Hint / Intuition:** Stop as soon as a prefix cannot match; multiple words share prefixes.
 
-**Remember:** Mark visited cells while exploring, then unmark on backtrack. Mark words found to avoid duplicates; delete dead Trie branches to prune future searches.
+**Solution 1:** DFS separately for each word, pruning on mismatched letters — O(W·M·N·3^L) worst-case time.
 
-**Memoization:** `(row, col, trie_node)` is insufficient: the future also depends on visited cells. Full-state caching is often expensive and has few hits; deleting words mutates the Trie.
+**Solution 2:** Build a Trie; DFS the board while following Trie edges; remove found words/dead branches — O(S + M·N·3^L) worst-case time, O(S+L) space.
 
-**Complexity:** Build Trie: O(S). DFS worst-case upper bound: O(M · N · 3^L), even with prefix pruning. Space: O(S + L) excluding results. `S` = total dictionary characters, `M × N` = board size, `L` = max word length (capped by M · N).
+**Pattern / Remember:** Trie / Backtracking. Prefix pruning reduces actual work, not the exponential worst case. Memoization needs visited cells too, so cache hits may be rare. W=words; M×N=board; L=max word length (≤MN); S=total dictionary characters.
 
 ---
 
@@ -55,27 +56,33 @@ Find dictionary words by walking adjacent board cells without reusing a cell in 
 
 ### [236. Lowest Common Ancestor of a Binary Tree](https://leetcode.com/problems/lowest-common-ancestor-of-a-binary-tree/)
 
-Find the lowest node that is an ancestor of both `p` and `q`.
+**Problem:** Find the lowest node that is an ancestor of both p and q.
 
-**Pattern:** Recursive DFS / Postorder
+**Naive solution:** Find both root-to-target paths, then compare their common prefix — O(n) time, O(h) extra space.
 
-**Hint / Intuition:** If left and right both find something, current node is the LCA. Otherwise propagate the non-null side.
+**Hint / Intuition:** If targets appear in different child subtrees, the current node is their LCA.
 
-**Complexity:** O(n) time, O(h) space.
+**Solution 1:** Build parent pointers, then walk ancestors to find the first shared one — O(n) time, O(n) space.
+
+**Solution 2:** Postorder DFS: return p/q when found; if both children return nodes, return current; otherwise return non-null child — O(n) time, O(h) stack.
+
+**Pattern / Remember:** Recursive DFS / Trees. A recursive call returns a found target, LCA, or None.
 
 ---
 
 ### [105. Construct Binary Tree from Preorder and Inorder Traversal](https://leetcode.com/problems/construct-binary-tree-from-preorder-and-inorder-traversal/)
 
-Reconstruct a binary tree from its preorder and inorder traversals (unique values).
+**Problem:** Rebuild a binary tree from preorder and inorder arrays of distinct values.
 
-**Pattern:** Trees / Divide & Conquer / Recursive DFS
+**Naive solution:** Take the preorder root; search inorder and recursively slice both arrays — O(n²) worst-case time and auxiliary space.
 
-**Hint / Intuition:** Preorder picks the root; inorder splits its left and right subtrees. Left subtree size tells you how to divide preorder. Repeat recursively.
+**Hint / Intuition:** Preorder chooses the root; inorder reveals the size of its left and right subtrees.
 
-**Remember:** Preorder = Root → Left → Right; Inorder = Left → Root → Right. Use a value-to-inorder-index map and preorder pointer for O(n) reconstruction.
+**Solution 1:** Use an inorder-index hashmap, a preorder cursor, and recursive inorder bounds — O(n) time, O(n) space.
 
-**Complexity:** O(n) time, O(n) extra space (index map + recursion).
+**Solution 2:** Iterative stack with an inorder cursor: attach left children until an inorder match, then backtrack to attach right — O(n) time, O(n) space.
+
+**Pattern / Remember:** Divide & Conquer / DFS. Preorder = Root–Left–Right; Inorder = Left–Root–Right.
 
 ---
 
@@ -83,46 +90,33 @@ Reconstruct a binary tree from its preorder and inorder traversals (unique value
 
 ### [143. Reorder List](https://leetcode.com/problems/reorder-list/)
 
-Reorder `1 → 2 → 3 → 4 → 5` into `1 → 5 → 2 → 4 → 3`.
+**Problem:** Change 1→2→3→4→5 into 1→5→2→4→3, rewiring the original nodes.
 
-**Pattern:** Two Pointers / Reverse Linked List / Merge
+**Naive solution:** Collect node references in an array, then alternate its front/back indices — O(n) time, O(n) space.
 
-**Hint / Intuition:** Need to alternate nodes from the front and back.
+**Hint / Intuition:** Accessing both ends is hard in a singly linked list; reorganize how you access the second half.
 
-- **Easy:** Store node references in a deque, alternate `popleft()` and `pop()`. O(n) space.
-- **Optimal:** Find middle (slow/fast) → reverse second half → merge alternately. O(1) extra space.
+**Solution 1:** Store node references in a deque; alternate `popleft()` and `pop()` — O(n) time, O(n) space.
 
-**Remember (reversal):** Save next → Flip arrow → Advance pointers.
+**Solution 2:** Find middle (slow/fast), reverse second half, weave halves together — O(n) time, O(1) extra space.
 
-**Complexity:** O(n) time, O(1) extra space (optimal).
+**Pattern / Remember:** Two Pointers / Linked List Reversal. Reverse = save next → flip pointer → advance; terminate final next with None.
 
 ---
 
 ### [23. Merge k Sorted Lists](https://leetcode.com/problems/merge-k-sorted-lists/)
 
-Merge `k` sorted linked lists into one sorted linked list.
+**Problem:** Merge k sorted linked lists into one sorted list.
 
-**Pattern:** Min Heap / Divide & Conquer
+**Naive solution:** Collect all N nodes and sort by value — O(N log N) time, O(N) extra space.
 
-**Hint / Intuition:** Two optimal approaches:
+**Hint / Intuition:** Only the smallest remaining node from each list can be the next output.
 
-**1. Min Heap**
-- Keep one candidate (head) from each list in a min heap.
-- Pop the smallest, append it to the result, push its successor.
-- Use `(node.val, list_index, node)` to handle equal values.
+**Solution 1:** Min heap of up to k heads: pop min, append, push its successor — O(N log k) time, O(k) space.
 
-**Complexity:** O(N log k) time, O(k) space.
+**Solution 2:** Merge lists pairwise in rounds (iterative divide-and-conquer) — O(N log k) time, O(1) auxiliary space.
 
-**2. Divide & Conquer**
-- Merge sorted lists in pairs, like merge sort.
-- Repeat until only one merged list remains.
-- Each round processes N nodes; there are O(log k) rounds.
-
-**Complexity:** O(N log k) time, O(1) extra space (iterative, in-place).
-
-**Remember:** Heap = repeatedly pick the smallest. Divide & Conquer = merge pairs in rounds.
-
-`N` = total nodes, `k` = number of lists.
+**Pattern / Remember:** Heap / Divide & Conquer. For Python heap ties use `(value, list_index, node)`; N=total nodes, k=lists.
 
 ---
 
@@ -130,27 +124,33 @@ Merge `k` sorted linked lists into one sorted linked list.
 
 ### [435. Non-overlapping Intervals](https://leetcode.com/problems/non-overlapping-intervals/)
 
-Remove the fewest intervals so the rest do not overlap.
+**Problem:** Remove the fewest intervals so the remaining ones do not overlap.
 
-**Pattern:** Greedy + Sorting
+**Naive solution:** Sort, then try all subsets and check overlaps — O(n·2^n) time (plus sorting), O(n) space.
 
-**Hint / Intuition:** When intervals overlap, keep the one that ends earlier to leave more room for future intervals.
+**Hint / Intuition:** When two overlap, keeping the one that ends first leaves more space for the future.
 
-**Complexity:** O(n log n) time, O(1) extra space (excluding sort).
+**Solution 1:** Sort by start; on overlap discard the one with the later end — O(n log n) time, O(1) scan space.
+
+**Solution 2:** Sort by end; greedily keep each interval starting at/after the last kept end — O(n log n) time, O(1) scan space.
+
+**Pattern / Remember:** Greedy / Intervals. Earliest finish dominates later finishes; sorting may use extra space.
 
 ---
 
 ### [55. Jump Game](https://leetcode.com/problems/jump-game/)
 
-Determine whether you can reach the last index.
+**Problem:** Decide whether you can reach the last index.
 
-**Pattern:** Greedy / Reachability
+**Naive solution:** DFS every possible jump — O(2^n) worst-case time, O(n) stack.
 
-**Hint / Intuition:** Track the farthest reachable index. If the current index is beyond it, you are stuck.
+**Hint / Intuition:** Exact jump choices do not matter if a single reachable boundary summarizes them.
 
-`farthest = max(farthest, i + nums[i])`
+**Solution 1:** Memoize whether each index can reach the end — O(n²) time, O(n) space.
 
-**Complexity:** O(n) time, O(1) space.
+**Solution 2:** Greedy scan: if `i > farthest`, fail; otherwise `farthest = max(farthest, i + nums[i])` — O(n) time, O(1) space.
+
+**Pattern / Remember:** Greedy / Reachability. Multiple DP states collapse to one farthest reachable index.
 
 ---
 
@@ -158,19 +158,17 @@ Determine whether you can reach the last index.
 
 ### [152. Maximum Product Subarray](https://leetcode.com/problems/maximum-product-subarray/)
 
-Find the contiguous subarray with the largest product.
+**Problem:** Find the contiguous subarray with maximum product.
 
-**Pattern:** DP / Kadane-like
+**Naive solution:** Start at each index and extend the running product — O(n²) time, O(1) extra space.
 
-**Hint / Intuition:** Track both the max and min product ending here. A negative number can turn the smallest negative into the largest positive.
+**Hint / Intuition:** Negative values can turn the smallest product into the largest.
 
-`cur_max = max(n, prev_max * n, prev_min * n)`
+**Solution 1:** DP arrays store the max/min product ending at each index — O(n) time, O(n) space.
 
-`cur_min = min(n, prev_max * n, prev_min * n)`
+**Solution 2:** Keep rolling max/min: each = max/min of `x`, `prev_max*x`, `prev_min*x` — O(n) time, O(1) space.
 
-**Remember:** Calculate both from the previous max/min before overwriting either.
-
-**Complexity:** O(n) time, O(1) space.
+**Pattern / Remember:** DP / Kadane-like. Compute both updates from PREVIOUS max/min; zeros restart naturally.
 
 ---
 
@@ -178,15 +176,17 @@ Find the contiguous subarray with the largest product.
 
 ### [139. Word Break](https://leetcode.com/problems/word-break/)
 
-Determine whether a string can be segmented into dictionary words (words may be reused).
+**Problem:** Decide whether a string can be segmented into reusable dictionary words.
 
-**Pattern:** Recursive Search / Memoization / DP
+**Naive solution:** Try every matching word and recurse on the remaining suffix — exponential, up to O(W·L·2^n) time; O(n) stack.
 
-**Hint / Intuition:** At each index, try every matching word and recurse from the end of that word. Different splits can reach the same remaining suffix.
+**Hint / Intuition:** Different splits can reach the same suffix; cache the starting index, not the word choices.
 
-**Remember:** Valid-prefix pruning reduces work, but repeated suffixes still cause exponential recursion. Cache results by starting index.
+**Solution 1:** Top-down DFS + memoization by index — O(n·W·L) time, O(n) cache/stack space.
 
-**Complexity:** Naive: exponential (up to O(2^n) paths, plus matching cost). Memoized, scanning `W` words of max length `L` at each of `n` positions: O(n · W · L) time, O(n) cache/stack space. Checking all split positions gives O(n²) candidates, but Python string slicing/comparison can make that O(n³).
+**Solution 2:** Bottom-up DP: `dp[i]` is true if some matching word starts at i and leads to a true suffix — O(n·W·L) time, O(n) space.
+
+**Pattern / Remember:** DP / String Segmentation. W=dictionary size, L=max word length; slicing can add cost; words can be reused.
 
 ---
 
@@ -194,19 +194,17 @@ Determine whether a string can be segmented into dictionary words (words may be 
 
 ### [647. Palindromic Substrings](https://leetcode.com/problems/palindromic-substrings/)
 
-Count all contiguous substrings that are palindromes.
+**Problem:** Count all palindromic contiguous substrings.
 
-**Pattern:** Two Pointers / Expand Around Center / DP
+**Naive solution:** Enumerate all substrings and check each by two pointers — O(n³) time, O(1) extra space.
 
-**Hint / Intuition:** Every palindrome has a center. Expand from each character (odd length) and each gap (even length), counting while both sides match.
+**Hint / Intuition:** Every palindrome has a center; or matching ends enclosing a palindromic interior.
 
-**Alternative (DP):** A substring is a palindrome if its ends match and its interior is a palindrome (or its length is at most 2).
+**Solution 1:** DP: `pal[l][r] = s[l]==s[r] and (r-l<2 or pal[l+1][r-1])` — O(n²) time, O(n²) space.
 
-`dp[l][r] = s[l] == s[r] and (r-l < 2 or dp[l+1][r-1])`
+**Solution 2:** Expand around each character and each gap — O(n²) time, O(1) extra space (best simple interview choice).
 
-**Remember:** There are `2n - 1` centers. Build palindromes outward instead of checking each substring from scratch.
-
-**Complexity:** Center expansion: O(n²) time, O(1) extra space. DP: O(n²) time, O(n²) space.
+**Pattern / Remember:** Two Pointers / DP. There are `2n−1` centers. Advanced Manacher algorithm achieves O(n) time.
 
 ---
 
@@ -214,41 +212,33 @@ Count all contiguous substrings that are palindromes.
 
 ### [C1. DP or Greedy?](https://en.wikipedia.org/wiki/Greedy_algorithm)
 
-Decide whether a problem needs multiple saved states or can be reduced to one best summary.
+**Problem:** Decide whether to keep multiple possible states or make a safe local choice.
 
-**Pattern:** DP vs Greedy
+**Naive solution:** Explore every decision path — often exponential, O(b^d) for branching b and depth d.
 
-**Hint / Intuition:** First find a valid DP state. Then ask:
+**Hint / Intuition:** Can one state dominate the others without ever sacrificing an optimal outcome?
 
-**“Do I really need all these states, or does one state dominate the others?”**
+**Solution 1:** DP: store meaningful states and transitions — O(states × transitions) time, O(states) space.
 
-DP usually means:
-- Multiple possibilities must be preserved.
-- The future depends on which previous state you came from.
-- `dp[i]` combines several meaningful previous states.
+**Solution 2:** Greedy: retain a provably sufficient best value/boundary — e.g., Jump Game O(n) time, O(1) space.
 
-Greedy usually means:
-- One best value / boundary dominates the others.
-- You do not care about the exact path.
-- The future only needs a summary like `max`, `min`, `farthest`, or `earliest end`.
-
-**Remember:** Brute force → memoization / DP → ask if the DP state can collapse into one value, and whether discarding the other choices is always safe.
-
-**Example:** Jump Game DP stores which indices can reach the end. Greedy realizes only the reachable boundary matters.
+**Pattern / Remember:** Prove greedy dominance; state compression alone does not guarantee a greedy solution. Example: Jump Game farthest reach.
 
 ---
 
 ### [C2. Recognizing Exponential Recursion](https://en.wikipedia.org/wiki/Recurrence_relation)
 
-Estimate the time complexity of a naive recursive search by inspecting its recursion tree.
+**Problem:** Estimate the runtime of a branching recursive search.
 
-**Pattern:** Recursion Tree / Time Complexity
+**Naive solution:** Draw its recursion tree: b calls per node, depth d gives O(b^d) calls as an upper bound (O(1) work/call).
 
-**Hint / Intuition:** Ask: (1) branches per call? (2) recursion depth? (3) repeated states? Branching into multiple nearly-full-size subproblems often means exponential work.
+**Hint / Intuition:** Ask: how many branches, how much input shrinks per call, and which states repeat?
 
-**Remember:** `b` branches per call, depth `d` → O(b^d) upper bound, not always tight. Two calls on half-size inputs can be O(n); two calls on size n−1 can be O(2^n). Memoization collapses repeated states.
+**Solution 1:** Write a recurrence: `T(n)=2T(n-1)+O(1)` is O(2^n); `T(n)=2T(n/2)+O(1)` is O(n).
 
-**Related:** [70. Climbing Stairs](https://leetcode.com/problems/climbing-stairs/), [198. House Robber](https://leetcode.com/problems/house-robber/), [494. Target Sum](https://leetcode.com/problems/target-sum/), [416. Partition Equal Subset Sum](https://leetcode.com/problems/partition-equal-subset-sum/), [131. Palindrome Partitioning](https://leetcode.com/problems/palindrome-partitioning/)
+**Solution 2:** With memoization, count distinct states × transitions per state instead of all recursion paths.
+
+**Pattern / Remember:** Recursion Trees / Complexity. Multiple branches alone ≠ exponential; small reductions + repeated subproblems are warning signs.
 
 ---
 
@@ -256,123 +246,129 @@ Estimate the time complexity of a naive recursive search by inspecting its recur
 
 ## Quick Cheat Sheet
 
-| Concept | Contiguous? | Order matters? | Remember |
+| Concept | Contiguous? | Order matters? | Typical time complexity |
 |---|---|---|---|
-| Subarray | Yes | Yes | Slice of the array |
-| Subsequence | No | Yes | Skip elements, keep order |
-| Subset | No | No | Take / skip elements |
-| Permutation | N/A | Yes | Rearrangement |
-| Combination | N/A | No | Selection |
+| Subarray | Yes | Yes | O(n²) to enumerate index ranges |
+| Subsequence | No | Yes | O(n·2^n) to generate/copy all |
+| Subset | No | No | O(n·2^n) to generate/copy all |
+| Permutation | N/A | Yes | O(n·n!) to generate all |
+| Combination | N/A | No | O(k·C(n,k)) to generate size-k sets |
+| Prefix / Suffix | N/A | Yes | O(n) to precompute aggregates |
+| Sliding Window | Yes | Yes | O(n) for a valid one-pass window |
+
+*Complexities describe the stated enumeration or typical pattern, not all problems involving that concept. Output materialization can require additional space.*
 
 ---
 
 ### [A1. Subarray](https://www.geeksforgeeks.org/dsa/array-subarray-subsequence-and-subset/)
 
-Given an array, choose a contiguous portion of it.
+**Problem:** Enumerate every nonempty contiguous part of an array.
 
-**Pattern:** Array Range
+**Naive solution:** Materialize every slice with nested loops — O(n³) total copied elements/time.
 
-**Hint / Intuition:** No skipping. If you choose indices `l...r`, you take everything between them.
+**Hint / Intuition:** Fix a start; every end from that start onward is valid.
 
-`[1, 2, 3, 4] → [2, 3]` ✓  
-`[1, 2, 3, 4] → [1, 3]` ✗
+**Solution 1:** Enumerate `(start, end)` index pairs — O(n²) time, O(1) extra space if streamed.
 
-**Remember:** `n(n + 1) / 2` non-empty subarrays.
+**Solution 2:** Choose any two of the n+1 boundaries — O(n²) index pairs, O(1) extra space if streamed.
 
-**Related:** [53. Maximum Subarray](https://leetcode.com/problems/maximum-subarray/), [152. Maximum Product Subarray](https://leetcode.com/problems/maximum-product-subarray/)
+**Pattern / Remember:** Array Ranges. `n(n+1)/2` nonempty subarrays; actual copied contents total O(n³). Related: [53](https://leetcode.com/problems/maximum-subarray/), [152](https://leetcode.com/problems/maximum-product-subarray/).
 
 ---
 
 ### [A2. Subsequence](https://www.geeksforgeeks.org/dsa/array-subarray-subsequence-and-subset/)
 
-Choose elements while preserving their original relative order.
+**Problem:** Generate selections that preserve original element order but allow skipping.
 
-**Pattern:** Take / Skip
+**Naive solution:** Enumerate all 2^n inclusion masks and collect selected elements — O(n·2^n) time.
 
-**Hint / Intuition:** You may skip elements, but you cannot reorder them.
+**Hint / Intuition:** At each index choose take or skip.
 
-`[1, 2, 3, 4] → [1, 3, 4]` ✓  
-`[1, 2, 3, 4] → [3, 1]` ✗
+**Solution 1:** DFS include/exclude with backtracking — O(n·2^n) output time, O(n) stack (excluding results).
 
-**Remember:** Each element is a yes/no choice → up to `2^n`.
+**Solution 2:** Bitmask from 0 to `2^n−1` — O(n·2^n) output time.
 
-**Related:** [300. Longest Increasing Subsequence](https://leetcode.com/problems/longest-increasing-subsequence/), [1143. Longest Common Subsequence](https://leetcode.com/problems/longest-common-subsequence/)
+**Pattern / Remember:** Backtracking / Order Preserved. There are 2^n position-based subsequences including empty. Related: [300](https://leetcode.com/problems/longest-increasing-subsequence/), [1143](https://leetcode.com/problems/longest-common-subsequence/).
 
 ---
 
 ### [A3. Subset](https://www.geeksforgeeks.org/dsa/array-subarray-subsequence-and-subset/)
 
-Choose any collection of elements; order does not matter.
+**Problem:** Generate every set of selected elements; ordering does not matter.
 
-**Pattern:** Take / Skip
+**Naive solution:** Copy an include/exclude decision list at each leaf — O(n·2^n) time.
 
-**Hint / Intuition:** Ask only “is this element included?”
+**Hint / Intuition:** Each element has a yes/no membership decision.
 
-`[1, 2, 3] → {1, 3}`
+**Solution 1:** Backtrack over include/exclude branches — O(n·2^n) output time, O(n) stack (excluding results).
 
-`{1, 3}` and `{3, 1}` are the same subset.
+**Solution 2:** Use a bitmask for membership — O(n·2^n) output time.
 
-**Remember:** `n` independent yes/no choices → `2^n` subsets.
-
-**Related:** [78. Subsets](https://leetcode.com/problems/subsets/), [416. Partition Equal Subset Sum](https://leetcode.com/problems/partition-equal-subset-sum/)
+**Pattern / Remember:** Backtracking / Set Selection. 2^n subsets of n distinct elements. Related: [78](https://leetcode.com/problems/subsets/), [416](https://leetcode.com/problems/partition-equal-subset-sum/).
 
 ---
 
 ### [A4. Permutation](https://en.wikipedia.org/wiki/Permutation)
 
-Arrange elements in every possible order.
+**Problem:** Generate all arrangements of n distinct elements.
 
-**Pattern:** Backtracking
+**Naive solution:** Try all n possibilities at every position, then reject repeats — up to O(n^(n+1)) time.
 
-**Hint / Intuition:** At each position, choose any unused element.
+**Hint / Intuition:** At each position choose one UNUSED element.
 
-`[1, 2, 3] → [1,2,3], [1,3,2], [2,1,3], ...`
+**Solution 1:** Backtrack with a used set/array — O(n·n!) time, O(n) auxiliary space (excluding output).
 
-**Remember:** Order matters. `n` distinct elements → `n!` permutations.
+**Solution 2:** Swap each candidate into the current position and restore afterward — O(n·n!) time, O(n) stack.
 
-**Related:** [46. Permutations](https://leetcode.com/problems/permutations/)
+**Pattern / Remember:** Backtracking / Order Matters. There are n! permutations. Related: [46](https://leetcode.com/problems/permutations/).
 
 ---
 
 ### [A5. Combination](https://en.wikipedia.org/wiki/Combination)
 
-Choose elements where the order of the chosen elements does not matter.
+**Problem:** Select k of n distinct elements; selection order does not matter.
 
-**Pattern:** Backtracking / Choose
+**Naive solution:** Generate all 2^n subsets and filter those of size k — O(n·2^n) time.
 
-**Hint / Intuition:** `{1, 2}` and `{2, 1}` represent the same choice.
+**Hint / Intuition:** Choose the next element only from positions after the previous choice.
 
-**Remember:** Combination = choose. Permutation = arrange. For `n` distinct elements, choose `k` without replacement: `C(n, k) = n! / (k!(n-k)!)`.
+**Solution 1:** Backtrack through increasing indices and prune impossible sizes — output-sensitive O(k·C(n,k)) typical time.
 
-**Related:** [39. Combination Sum](https://leetcode.com/problems/combination-sum/), [40. Combination Sum II](https://leetcode.com/problems/combination-sum-ii/)
+**Solution 2:** Generate successive k-element index combinations in lexicographic order — O(k·C(n,k)) time, O(k) working space.
+
+**Pattern / Remember:** Combinatorics / Backtracking. `C(n,k) = n!/(k!(n-k)!)`. Related: [39](https://leetcode.com/problems/combination-sum/), [40](https://leetcode.com/problems/combination-sum-ii/).
 
 ---
 
 ### [A6. Prefix / Suffix](https://www.geeksforgeeks.org/dsa/precomputation-technique-on-arrays/)
 
-A prefix starts at the beginning; a suffix ends at the end.
+**Problem:** Compute aggregates from the start (prefix) or end (suffix) of an array.
 
-**Pattern:** Precomputation / Running Value
+**Naive solution:** Recompute each requested prefix/suffix by scanning — O(n²) total time for all positions.
 
-`[1, 2, 3, 4]`
+**Hint / Intuition:** Reuse the previously accumulated result instead of rescanning.
 
-Prefix: `[1, 2, 3]`  
-Suffix: `[3, 4]`
+**Solution 1:** Build running prefix and suffix arrays in two passes — O(n) time, O(n) extra space.
 
-**Hint / Intuition:** Store information accumulated from the left and/or right so you do not recompute ranges.
+**Solution 2:** For [238. Product Except Self](https://leetcode.com/problems/product-of-array-except-self/), store prefixes in output, then multiply by a running suffix — O(n) time, O(1) auxiliary space.
 
-**Related:** [238. Product of Array Except Self](https://leetcode.com/problems/product-of-array-except-self/)
+**Pattern / Remember:** Precomputation / Running Aggregate. Prefix starts at index 0; suffix ends at n−1.
 
 ---
 
 ### [A7. Sliding Window](https://blog.neetcode.io/p/prepare-coding-interviews)
 
-Maintain a changing contiguous range while scanning an array or string.
+**Problem:** Process contiguous ranges while moving their boundaries through the array.
 
-**Pattern:** Two Pointers / Subarray
+**Naive solution:** Try every candidate range — at least O(n²) candidate windows.
 
-**Hint / Intuition:** Expand the right side; when the window becomes invalid, move the left side forward.
+**Hint / Intuition:** Can you update the window in O(1) as an endpoint moves?
 
-**Remember:** A sliding window is usually a smarter way to examine many related subarrays without restarting from scratch.
+**Solution 1:** Fixed-size window: add incoming and remove outgoing element — O(n) time, O(1) rolling state.
 
-**Related:** [3. Longest Substring Without Repeating Characters](https://leetcode.com/problems/longest-substring-without-repeating-characters/), [424. Longest Repeating Character Replacement](https://leetcode.com/problems/longest-repeating-character-replacement/)
+**Solution 2:** Variable-size window: expand right, shrink left while invalid (when the condition permits) — O(n) pointer moves, O(1)–O(n) tracking space.
+
+**Pattern / Remember:** Two Pointers / Contiguous Range. O(n) works when each pointer moves forward only; not every window condition allows it. Related: [3](https://leetcode.com/problems/longest-substring-without-repeating-characters/), [424](https://leetcode.com/problems/longest-repeating-character-replacement/).
+
+---
+
