@@ -86,6 +86,22 @@
 
 ---
 
+### [124. Binary Tree Maximum Path Sum](https://leetcode.com/problems/binary-tree-maximum-path-sum/)
+
+**Problem:** Find the largest sum of any nonempty path in a binary tree (endpoints anywhere).
+
+**Naive solution:** Enumerate and copy all paths between node pairs; calculate each sum — O(n³) time and space in the worst case (a chain). There are only O(n²) distinct paths.
+
+**Hint / Intuition:** A path can join left and right at a node, but a path returned to its parent cannot branch.
+
+**Solution 1:** Treat edges as undirected; DFS from each node with a running sum — O(n²) time, O(n) auxiliary space.
+
+**Solution 2:** Postorder DFS: `left = max(0, dfs(node.left))`, `right = max(0, dfs(node.right))`; update `best = max(best, node.val + left + right)`; return `node.val + max(left, right)` — O(n) time, O(h) stack.
+
+**Pattern / Remember:** Tree DFS / Postorder. Initialize `best = -inf` so all-negative trees work; never discard the current node. Global path can use both children; returned contribution chooses at most one.
+
+---
+
 ## Linked Lists
 
 ### [143. Reorder List](https://leetcode.com/problems/reorder-list/)
@@ -239,6 +255,22 @@
 **Solution 2:** With memoization, count distinct states × transitions per state instead of all recursion paths.
 
 **Pattern / Remember:** Recursion Trees / Complexity. Multiple branches alone ≠ exponential; small reductions + repeated subproblems are warning signs.
+
+---
+
+### [C3. Counting Paths vs Subsets vs Permutations](https://en.wikipedia.org/wiki/Combinatorics)
+
+**Problem:** Distinguish polynomial, exponential, and factorial brute-force search.
+
+**Naive solution:** Assume every branching recursive algorithm is exponential — this can badly overestimate runtime.
+
+**Hint / Intuition:** Count the distinct candidate choices first, then account for work done per candidate.
+
+**Solution 1:** Tree paths: choose two endpoints → O(n²) paths. Subsets: take/skip each item → 2^n. Permutations: choose the order → n! arrangements.
+
+**Solution 2:** Inspect the recursion tree: disjoint subtrees can be visited once, while overlapping/repeated subproblems create repeated work. Multiply candidate count by checking/copying cost.
+
+**Pattern / Remember:** Tree = unique route between endpoints; subset = inclusion choices; TSP = visiting order. O(n²) paths may cost O(n³) to store if many have length O(n). Branching alone does not imply exponential time.
 
 ---
 
