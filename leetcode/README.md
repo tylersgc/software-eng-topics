@@ -102,6 +102,40 @@
 
 ---
 
+## Trees / BST Concepts
+
+### [T1. Self-Balancing BST](https://en.wikipedia.org/wiki/Self-balancing_binary_search_tree)
+
+**Problem:** Keep BST search, insert, and delete efficient despite an unlucky insertion/deletion order.
+
+**Naive solution:** Ordinary BST can degenerate into a chain — O(n) worst-case search/insert/delete, O(n) height.
+
+**Hint / Intuition:** Maintain height O(log n) by rebalancing after modifications; rotations preserve BST key order.
+
+**Solution 1:** AVL tree: track node heights/balance factors; perform single or double rotations when needed — O(log n) search/insert/delete, O(n) node storage.
+
+**Solution 2:** Red-black tree: maintain coloring invariants using recoloring and rotations — O(log n) search/insert/delete, O(n) node storage.
+
+**Pattern / Remember:** Balanced BST / Rotations. AVL is more strictly balanced; red-black allows looser balance. Rotations preserve inorder ordering; maintaining balance, not merely using a BST, guarantees logarithmic height.
+
+---
+
+### [T2. Order Statistic Tree](https://en.wikipedia.org/wiki/Order_statistic_tree)
+
+**Problem:** Support frequent kth-smallest and rank queries while keys are inserted/deleted. Related: [230. Kth Smallest Element in a BST](https://leetcode.com/problems/kth-smallest-element-in-a-bst/).
+
+**Naive solution:** Inorder traverse and count to k — O(h + k) time, O(h) stack; O(n) worst case per query.
+
+**Hint / Intuition:** Cache subtree counts so each node reveals the rank of its own key.
+
+**Solution 1:** Augment any BST with `size = 1 + size(left) + size(right)`. For kth, let `s = size(left)`: if `k == s+1`, return node; if `k <= s`, go left; otherwise go right with `k -= s+1` — O(h) query/update, worst O(n) if unbalanced.
+
+**Solution 2:** Augment a self-balancing BST (AVL or red-black) with the same sizes; update counts on insert/delete and rotations — O(log n) kth/rank/insert/delete, O(n) total storage.
+
+**Pattern / Remember:** BST / Augmented Tree. Ordered keys + subtree sizes = rank navigation. Count nodes (or frequencies for duplicates); rotations must update sizes as well as balancing metadata.
+
+---
+
 ## Linked Lists
 
 ### [143. Reorder List](https://leetcode.com/problems/reorder-list/)
